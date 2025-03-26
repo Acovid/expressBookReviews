@@ -37,11 +37,35 @@ regd_users.post("/login", (req,res) => {
     return res.status(200).json({ message: "Login successful", token });
 });
 
-// Add a book review
-regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+
+// Add or modify a book review
+regd_users.put("/review/:isbn", (req, res) => {
+    const isbn = req.params.isbn; // Extract ISBN from URL
+    const { username, review } = req.body; // Get username & review from request body
+
+    if (!username || !review) {
+        return res.status(400).json({ message: "Username and review are required" });
+    }
+
+    // Check if the book exists
+    if (!books[isbn]) {
+        return res.status(404).json({ message: "Book not found" });
+    }
+
+    // Initialize reviews if not present
+    if (!books[isbn].reviews) {
+        books[isbn].reviews = {};
+    }
+
+    // Add or update the review
+    books[isbn].reviews[username] = review;
+
+    return res.status(200).json({
+        message: "Review added/updated successfully",
+        reviews: books[isbn].reviews
+    });
 });
+
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
